@@ -1,6 +1,5 @@
 package pl.coderslab.dao;
 
-import org.mindrot.jbcrypt.BCrypt;
 import pl.coderslab.entity.User;
 
 public class MainDao {

@@ -19,7 +19,7 @@ public class UserDao {
     public User create(User user) {
         try (Connection connection = DbUtil.getConnection();
              PreparedStatement statement = getCreateStatement(connection, user)) {
-            statement.executeUpdate(); // for UPDATE, INSERT, DELETE
+            statement.executeUpdate();
             ResultSet resultSet = statement.getGeneratedKeys();
             if (resultSet.next()) {
                 user.setId(resultSet.getInt(1));
@@ -46,7 +46,7 @@ public class UserDao {
     public User read(int userId) {
         try (Connection connection = DbUtil.getConnection();
              PreparedStatement statement = getReadStatement(connection, userId)) {
-            ResultSet resultSet = statement.executeQuery(); // for SELECT instructions
+            ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 return generateUserFrom(resultSet);
             }
@@ -62,7 +62,7 @@ public class UserDao {
         return statement;
     }
 
-    // TODO: 27.06.2020 add search for other fields
+    // TODO: 27.06.2020 add search for other fields?
 
     private User generateUserFrom(ResultSet resultSet) throws SQLException {
         User user = new User();
@@ -73,13 +73,13 @@ public class UserDao {
         return user;
     }
 
-    // TODO: 27.06.2020 add option to return value if update was successful
+    // TODO: 27.06.2020 add option to return value if update was successful?
     // stmt.getUpdateCount() method returns the number of rows affected.
 
     public void update(User user) {
         try (Connection connection = DbUtil.getConnection();
              PreparedStatement statement = getUpdateStatement(connection, user)) {
-            statement.executeUpdate(); // for UPDATE, INSERT, DELETE
+            statement.executeUpdate();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
@@ -94,12 +94,12 @@ public class UserDao {
         return statement;
     }
 
-    // TODO: 27.06.2020 add update for each field
+    // TODO: 27.06.2020 add update for each field?
 
     public void delete(int userId) {
         try (Connection connection = DbUtil.getConnection();
              PreparedStatement statement = getDeleteStatement(connection, userId)) {
-            statement.executeUpdate(); // for UPDATE, INSERT, DELETE
+            statement.executeUpdate();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
@@ -114,7 +114,7 @@ public class UserDao {
     public void deleteAll() {
         try (Connection connection = DbUtil.getConnection();
              PreparedStatement statement = getDeleteAllStatement(connection)) {
-            statement.executeUpdate(); // for UPDATE, INSERT, DELETE
+            statement.executeUpdate();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
@@ -127,11 +127,10 @@ public class UserDao {
     public User[] findAll() {
         try (Connection connection = DbUtil.getConnection();
              PreparedStatement statement = getFindAllStatement(connection)) {
-            ResultSet resultSet = statement.executeQuery(); // for SELECT instructions
+            ResultSet resultSet = statement.executeQuery();
             User[] allUsers = new User[0];
             while (resultSet.next()) {
-                User user = generateUserFrom(resultSet);
-                allUsers = addToArray(user, allUsers);
+                allUsers = addToArray(generateUserFrom(resultSet), allUsers);
             }
             return allUsers;
         } catch (SQLException e) {
