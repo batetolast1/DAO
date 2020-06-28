@@ -9,9 +9,7 @@ import java.util.Arrays;
 public class UserDao {
     private static final String CREATE_USER_QUERY =
             "INSERT INTO `users`(`email`, `username`, `password`) VALUES (?, ?, ?)";
-    private static final String READ_USER_QUERY = "SELECT * FROM `users` WHERE `id` = ?";
-    private static final String READ_USER_BY_EMAIL_QUERY = "SELECT * FROM `users` WHERE `email` = ?";
-    private static final String READ_USER_BY_USERNAME = "SELECT * FROM `users` WHERE `username` = ?";
+    private static final String READ_USER_QUERY = "SELECT * FROM `users` WHERE `columnName` = ?";
     private static final String UPDATE_USER_QUERY =
             "UPDATE `users` SET `email` = ?, `username` = ?, `password` = ? WHERE `id` = ?";
     private static final String UPDATE_USER_WITHOUT_PASSWORD_QUERY =
@@ -62,7 +60,7 @@ public class UserDao {
     }
 
     private PreparedStatement getReadStatement(Connection connection, int userId) throws SQLException {
-        PreparedStatement statement = connection.prepareStatement(READ_USER_QUERY);
+        PreparedStatement statement = connection.prepareStatement(READ_USER_QUERY.replace("columnName", "id"));
         statement.setInt(1, userId);
         return statement;
     }
@@ -73,12 +71,6 @@ public class UserDao {
                 .withUserName(resultSet.getString("username"))
                 .withPassword(resultSet.getString("password"))
                 .build();
-        /*User user = new User();
-        user.setId(resultSet.getInt("id"));
-        user.setEmail(resultSet.getString("email"));
-        user.setUserName(resultSet.getString("username"));
-        user.setPassword(resultSet.getString("password"));
-        return user;*/
     }
 
     public User readByEmail(String email) {
@@ -95,7 +87,7 @@ public class UserDao {
     }
 
     private PreparedStatement getReadByEmailStatement(Connection connection, String email) throws SQLException {
-        PreparedStatement statement = connection.prepareStatement(READ_USER_BY_EMAIL_QUERY);
+        PreparedStatement statement = connection.prepareStatement(READ_USER_QUERY.replace("columnName", "email"));
         statement.setString(1, email);
         return statement;
     }
@@ -116,7 +108,7 @@ public class UserDao {
     }
 
     private PreparedStatement getReadByUserNameStatement(Connection connection, String userName) throws SQLException {
-        PreparedStatement statement = connection.prepareStatement(READ_USER_BY_USERNAME);
+        PreparedStatement statement = connection.prepareStatement(READ_USER_QUERY.replace("columnName", "username"));
         statement.setString(1, userName);
         return statement;
     }
