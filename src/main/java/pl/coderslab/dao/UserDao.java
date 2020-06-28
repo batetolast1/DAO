@@ -11,6 +11,7 @@ public class UserDao {
             "INSERT INTO `users`(`email`, `username`, `password`) VALUES (?, ?, ?)";
     private static final String READ_USER_QUERY = "SELECT * FROM `users` WHERE `id` = ?";
     private static final String READ_USER_BY_EMAIL_QUERY = "SELECT * FROM `users` WHERE `email` = ?";
+    private static final String READ_USER_BY_USERNAME = "SELECT * FROM `users` WHERE `username` = ?";
     private static final String UPDATE_USER_QUERY =
             "UPDATE `users` SET `email` = ?, `username` = ?, `password` = ? WHERE `id` = ?";
     private static final String UPDATE_USER_WITHOUT_PASSWORD_QUERY =
@@ -91,6 +92,27 @@ public class UserDao {
     private PreparedStatement getReadByEmailStatement(Connection connection, String email) throws SQLException {
         PreparedStatement statement = connection.prepareStatement(READ_USER_BY_EMAIL_QUERY);
         statement.setString(1, email);
+        return statement;
+    }
+
+    public User[] readByUserName(String userName) {
+        try (Connection connection = DbUtil.getConnection();
+             PreparedStatement statement = getReadByUserNameStatement(connection, userName)) {
+            ResultSet resultSet = statement.executeQuery();
+            User[] users = new User[0];
+            while (resultSet.next()) {
+                users = addToArray(generateUserFrom(resultSet), users);
+            }
+            return users;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return null;
+    }
+
+    private PreparedStatement getReadByUserNameStatement(Connection connection, String userName) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement(READ_USER_BY_USERNAME);
+        statement.setString(1, userName);
         return statement;
     }
 

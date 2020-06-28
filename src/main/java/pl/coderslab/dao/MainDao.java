@@ -2,6 +2,8 @@ package pl.coderslab.dao;
 
 import pl.coderslab.entity.User;
 
+import java.util.Arrays;
+
 public class MainDao {
 
     public static void main(String[] args) {
@@ -24,7 +26,7 @@ public class MainDao {
 
         User user3 = new User();
         user3.setEmail("user3@gmail.com");
-        user3.setUserName("user3");
+        user3.setUserName("user1");
         user3.setPassword("password3");
         user3 = userDao.create(user3);
         System.out.println(user3);
@@ -43,6 +45,11 @@ public class MainDao {
         System.out.println(userDao.readByEmail("user1@gmail.com"));
         System.out.println("\nReading user with e-mail not existing in database");
         System.out.println(userDao.readByEmail("user11@gmail.com"));
+
+        System.out.println("\nReading user by username");
+        System.out.println(Arrays.deepToString(userDao.readByUserName("user1")));
+        System.out.println("\nReading user with e-mail not existing in database");
+        System.out.println(Arrays.deepToString(userDao.readByUserName("user3")));
 
         System.out.println("\nChanging all user data");
         System.out.println("User to update:");
