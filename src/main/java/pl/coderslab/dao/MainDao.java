@@ -10,6 +10,34 @@ public class MainDao {
         UserDao userDao = new UserDao();
 
         System.out.println("Creating new users");
+        User user1 = new User.Builder(0)
+                .withEmail("user1@gmail.com")
+                .withUserName("user1")
+                .withPassword("password1")
+                .build();
+        user1 = userDao.create(user1);
+        System.out.println(user1);
+        User user2 = new User.Builder(0)
+                .withEmail("user2@gmail.com")
+                .withUserName("user2")
+                .withPassword("password2")
+                .build();
+        user2 = userDao.create(user2);
+        System.out.println(user2);
+        User user3 = new User.Builder(0)
+                .withEmail("user3@gmail.com")
+                .withUserName("user1")
+                .withPassword("password3")
+                .build();
+        user3 = userDao.create(user3);
+        System.out.println(user3);
+
+        System.out.println("Creating invalid user:");
+        User user4 = new User.Builder(0)
+                .build();
+        user4 = userDao.create(user4);
+        System.out.println(user4);
+        /*System.out.println("Creating new users");
         User user1 = new User();
         user1.setEmail("user1@gmail.com");
         user1.setUserName("user1");
@@ -34,7 +62,7 @@ public class MainDao {
         System.out.println("Creating invalid user:");
         User user4 = new User();
         user4 = userDao.create(user4);
-        System.out.println(user4);
+        System.out.println(user4);*/
 
         System.out.println("\nReading user");
         System.out.println(userDao.read(1));

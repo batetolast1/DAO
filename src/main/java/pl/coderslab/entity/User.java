@@ -8,6 +8,43 @@ public class User {
     private String userName;
     private String password;
 
+    public static class Builder {
+        private int id;
+        private String email;
+        private String userName;
+        private String password;
+
+        public Builder(int id) {
+            this.id = id;
+        }
+        public Builder withEmail(String email) {
+            this.email = email;
+            return this;
+        }
+
+        public Builder withUserName(String userName) {
+            this.userName = userName;
+            return this;
+        }
+
+        public Builder withPassword(String password) {
+            this.password = password;
+            return this;
+        }
+
+        public User build() {
+            User user = new User();
+            user.id = this.id;
+            user.email = this.email;
+            user.userName = this.userName;
+            user.password = this.password;
+            return user;
+        }
+    }
+
+    private User() {
+    }
+
     public int getId() {
         return id;
     }

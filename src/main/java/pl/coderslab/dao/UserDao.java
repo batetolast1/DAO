@@ -68,12 +68,17 @@ public class UserDao {
     }
 
     private User generateUserFrom(ResultSet resultSet) throws SQLException {
-        User user = new User();
+        return new User.Builder(resultSet.getInt("id"))
+                .withEmail(resultSet.getString("email"))
+                .withUserName(resultSet.getString("username"))
+                .withPassword(resultSet.getString("password"))
+                .build();
+        /*User user = new User();
         user.setId(resultSet.getInt("id"));
         user.setEmail(resultSet.getString("email"));
         user.setUserName(resultSet.getString("username"));
         user.setPassword(resultSet.getString("password"));
-        return user;
+        return user;*/
     }
 
     public User readByEmail(String email) {
