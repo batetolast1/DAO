@@ -39,17 +39,37 @@ public class MainDao {
         System.out.println("Reading non-existing user");
         System.out.println(userDao.read(4));
 
-        System.out.println("\nChanging user data");
+        System.out.println("\nReading user by e-mail");
+        System.out.println(userDao.readByEmail("user1@gmail.com"));
+        System.out.println("\nReading user with e-mail not existing in database");
+        System.out.println(userDao.readByEmail("user11@gmail.com"));
+
+        System.out.println("\nChanging all user data");
         System.out.println("User to update:");
         user1 = userDao.read(1);
         System.out.println(user1);
         user1.setEmail("user1@interia.pl");
         user1.setUserName("USER1");
         user1.setPassword("new_password1");
-        userDao.update(user1);
+        System.out.println("User to update with changed data");
+        System.out.println(user1);
+        System.out.println(userDao.update(user1));
         user1 = userDao.read(1);
         System.out.println("User after update");
         System.out.println(user1);
+
+        System.out.println("\nChanging user data without password");
+        System.out.println("User to update:");
+        user2 = userDao.read(2);
+        System.out.println(user2);
+        user2.setEmail("user2@yahoo.com");
+        user2.setUserName("UsSSSser2");
+        System.out.println("User to update with changed data");
+        System.out.println(user2);
+        System.out.println(userDao.update(user2));
+        user2 = userDao.read(2);
+        System.out.println("User after update");
+        System.out.println(user2);
 
         System.out.println("\nChecking password match");
         System.out.println(user1.checkPasswordMatch("new_password1"));
@@ -62,7 +82,7 @@ public class MainDao {
         }
 
         System.out.println("\nDeleting user");
-        userDao.delete(1);
+        System.out.println(userDao.delete(1));
         System.out.println(userDao.read(1));
 
         System.out.println("\nPrinting all users");
@@ -72,7 +92,7 @@ public class MainDao {
         }
 
         System.out.println("\nDeleting all users");
-        userDao.deleteAll();
+        System.out.println(userDao.deleteAll());
         allUsers = userDao.findAll();
         System.out.println("Printing all users");
         for (User user : allUsers) {

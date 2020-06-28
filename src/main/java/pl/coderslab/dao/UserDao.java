@@ -10,15 +10,19 @@ public class UserDao {
     private static final String CREATE_USER_QUERY =
             "INSERT INTO `users`(`email`, `username`, `password`) VALUES (?, ?, ?)";
     private static final String READ_USER_QUERY = "SELECT * FROM `users` WHERE `id` = ?";
+    private static final String READ_USER_BY_EMAIL_QUERY = "SELECT * FROM `users` WHERE `email` = ?";
     private static final String UPDATE_USER_QUERY =
             "UPDATE `users` SET `email` = ?, `username` = ?, `password` = ? WHERE `id` = ?";
+    private static final String UPDATE_USER_WITHOUT_PASSWORD_QUERY =
+            "UPDATE `users` SET `email` = ?, `username` = ? WHERE `id` = ?";
+    private static final String GET_PASSWORD_QUERY = "SELECT `password` FROM `users` WHERE `id` = ?";
     private static final String DELETE_USER_QUERY = "DELETE FROM `users` WHERE `id` = ?";
     private static final String FIND_ALL_USERS_QUERY = "SELECT * FROM `users`";
     private static final String DELETE_ALL_USERS_QUERY = "DELETE FROM `users`";
 
     public User create(User user) {
         try (Connection connection = DbUtil.getConnection();
-             PreparedStatement statement = getCreateStatement(connection, user)) {
+             PreparedStatement statement = getCreateStatement(connection, user.getEmail(), user.getUserName(), user.getPassword())) {
             statement.executeUpdate();
             ResultSet resultSet = statement.getGeneratedKeys();
             if (resultSet.next()) {
@@ -31,11 +35,11 @@ public class UserDao {
         }
     }
 
-    private PreparedStatement getCreateStatement(Connection connection, User user) throws SQLException {
+    private PreparedStatement getCreateStatement(Connection connection, String email, String userName, String password) throws SQLException {
         PreparedStatement statement = connection.prepareStatement(CREATE_USER_QUERY, Statement.RETURN_GENERATED_KEYS);
-        statement.setString(1, user.getEmail());
-        statement.setString(2, user.getUserName());
-        statement.setString(3, hashPassword(user.getPassword()));
+        statement.setString(1, email);
+        statement.setString(2, userName);
+        statement.setString(3, hashPassword(password));
         return statement;
     }
 
@@ -62,8 +66,6 @@ public class UserDao {
         return statement;
     }
 
-    // TODO: 27.06.2020 add search for other fields?
-
     private User generateUserFrom(ResultSet resultSet) throws SQLException {
         User user = new User();
         user.setId(resultSet.getInt("id"));
@@ -73,36 +75,93 @@ public class UserDao {
         return user;
     }
 
-    // TODO: 27.06.2020 add option to return value if update was successful?
-    // stmt.getUpdateCount() method returns the number of rows affected.
-
-    public void update(User user) {
+    public User readByEmail(String email) {
         try (Connection connection = DbUtil.getConnection();
-             PreparedStatement statement = getUpdateStatement(connection, user)) {
-            statement.executeUpdate();
+             PreparedStatement statement = getReadByEmailStatement(connection, email)) {
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return generateUserFrom(resultSet);
+            }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+        return null;
     }
 
-    private PreparedStatement getUpdateStatement(Connection connection, User user) throws SQLException {
-        PreparedStatement statement = connection.prepareStatement(UPDATE_USER_QUERY);
-        statement.setString(1, user.getEmail());
-        statement.setString(2, user.getUserName());
-        statement.setString(3, hashPassword(user.getPassword()));
-        statement.setInt(4, user.getId());
+    private PreparedStatement getReadByEmailStatement(Connection connection, String email) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement(READ_USER_BY_EMAIL_QUERY);
+        statement.setString(1, email);
         return statement;
     }
 
-    // TODO: 27.06.2020 add update for each field?
-
-    public void delete(int userId) {
+    public int update(User user) {
         try (Connection connection = DbUtil.getConnection();
-             PreparedStatement statement = getDeleteStatement(connection, userId)) {
+             PreparedStatement statement = getUpdateStatement(connection, user)) {
             statement.executeUpdate();
+            return statement.getUpdateCount();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+        return -1;
+    }
+
+    private PreparedStatement getUpdateStatement(Connection connection, User user) throws SQLException {
+        if (isPasswordUnchanged(user)) {
+            return getUpdateStatementWithoutPassword(connection, user.getId(), user.getEmail(), user.getUserName());
+        } else {
+            return getFullUpdateStatement(connection, user.getId(), user.getEmail(), user.getUserName(), user.getPassword());
+        }
+    }
+
+    private PreparedStatement getFullUpdateStatement(Connection connection, int id, String email, String userName, String password) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement(UPDATE_USER_QUERY);
+        statement.setString(1, email);
+        statement.setString(2, userName);
+        statement.setString(3, hashPassword(password));
+        statement.setInt(4, id);
+        return statement;
+    }
+
+    private PreparedStatement getUpdateStatementWithoutPassword(Connection connection, int id, String email, String userName) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement(UPDATE_USER_WITHOUT_PASSWORD_QUERY);
+        statement.setString(1, email);
+        statement.setString(2, userName);
+        statement.setInt(3, id);
+        return statement;
+    }
+
+    private boolean isPasswordUnchanged(User userToUpdate) {
+        return userToUpdate.getPassword().equals(getPasswordFromDatabase(userToUpdate.getId()));
+    }
+
+    private String getPasswordFromDatabase(int userId) {
+        try (Connection connection = DbUtil.getConnection();
+             PreparedStatement statement = getPasswordStatement(connection, userId)) {
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getString("password");
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return null;
+    }
+
+    private PreparedStatement getPasswordStatement(Connection connection, int userId) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement(GET_PASSWORD_QUERY);
+        statement.setInt(1, userId);
+        return statement;
+    }
+
+    public int delete(int userId) {
+        try (Connection connection = DbUtil.getConnection();
+             PreparedStatement statement = getDeleteStatement(connection, userId)) {
+            statement.executeUpdate();
+            return statement.getUpdateCount();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return -1;
     }
 
     private PreparedStatement getDeleteStatement(Connection connection, int userId) throws SQLException {
@@ -111,13 +170,15 @@ public class UserDao {
         return statement;
     }
 
-    public void deleteAll() {
+    public int deleteAll() {
         try (Connection connection = DbUtil.getConnection();
              PreparedStatement statement = getDeleteAllStatement(connection)) {
             statement.executeUpdate();
+            return statement.getUpdateCount();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+        return -1;
     }
 
     private PreparedStatement getDeleteAllStatement(Connection connection) throws SQLException {
